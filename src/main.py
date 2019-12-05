@@ -10,6 +10,7 @@ from sklearn import metrics
 from tqdm import tqdm
 
 import torch
+import torchvision
 from torchvision.transforms import transforms
 from torch.utils.data import DataLoader
 from torch.optim import Adam
@@ -99,16 +100,18 @@ def extract_embeddings(loader, model, cuda):
 	return embeddings, targets
 
 
-def plot_embeddings(dataset, embeddings, targets, title=''):
+def plot_embeddings(dataset, embeddings, targets, title='', num=10):
 	embeddings = TSNE(n_components=2).fit_transform(embeddings)
 	plt.figure(figsize=(10, 10))
-	for cls in np.random.choice(dataset.classes, 10):
+	if num > len(dataset.classes):
+		num = len(dataset.classes)
+	for cls in np.random.choice(dataset.classes, num):
 		i = dataset.class_to_idx[cls]
 		inds = np.where(targets == i)[0]
 		plt.scatter(embeddings[inds, 0], embeddings[inds, 1], alpha=0.5)
 	plt.legend(dataset.classes)
 	plt.title(title)
-	plt.savefig('{}_embeddings.png'.format(title))
+	plt.savefig('result/{}_embeddings.png'.format(title))
 
 
 def predict(train_loader, predict_loader, model, cuda):

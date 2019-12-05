@@ -19,5 +19,12 @@
 """
 
 #python src/main.py datasets/lfwcrop_color_by_dirs --min-images 20 
-python src/main_cifar.py datasets/cifar-10-batches-py --epochs 5 | tee result/cifar_e5.txt 
+
+for i in {0..9}
+do
+	i=$[$i*10]
+	#echo "$i"
+	python src/cifar.py datasets/cifar-10-batches-py  --epochs ${i}
+done
+
 
