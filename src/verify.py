@@ -26,25 +26,39 @@ def generate_particles(kde,num,dim):
 			var = np.random.rand(1)
 			val = cdf(kde[j],var)
 			particle.append(val)
-		particles.append(aprticle)
+		particles.append(particle)
 
 	return np.array(particles)
 
 def verifiability(data):
+	data = [d[0] for d in data]
 	dim = len(data[0])
 	num = len(data)
+	kde = gaussian_kde(data) 
 	time = 1000
-	num_particles = 1000	
+	num_particles = 10000	
 	ver = 0
 
-	kde = gaussian_kde(data) 
-	particles = generate_particles(kde, num_particles, dim)
 
 	for i in range(num):
+		coeff = np.random.rand(dim)
+		#print(data[0])
+		p_data = [ np.dot(d, coeff) / np.dot(coeff, coeff) for d in data ] 
+
+		particles = generate_particles(kde, num_particles, dim)
+		p_particles = [ np.dot(particle, coeff) / np.dot(coeff, coeff) for particle in particles ] 
+		
+		max_inter, min_inter = max(p_data), min(p_data)
+		for j in range(num_particles):
+			if max_inter > p_particles[j] and p_particles[j] < min_inter:
+				ver += 1
+		
+		"""
 		coeff = np.random.rand(dim)
 		p = np.dot(data[i], coeff) / np.dot(coeff, coeff)
 		
 		for j in range(0,num_particlse,2):
+			# triple pick
 			p1 = np.dot(particles[j], coeff) / np.dot(coeff, coeff)
 			p2 = np.dot(particles[j+1], coeff) / np.dot(coeff, coeff)
 			if p1 > p2:
@@ -53,7 +67,10 @@ def verifiability(data):
 			else:
 				if p1 < p and p < p2:
 					ver += 1
-	
+		"""
+			
+			
+			
 	return ver / (times*num_particles)
 
 def main():
@@ -115,6 +132,14 @@ def main():
 	test_embeddings, test_targets = extract_embeddings(test_loader, model, cuda)
 	
 	x = [ i for i in list(zip(test_embeddings, test_targets)) if i[1] == test_targets[0] ]
+	ver = verifiability(x)
+	print(ver)
+	ver = verifiability(x)
+	print(ver)
+	ver = verifiability(x)
+	print(ver)
+	ver = verifiability(x)
+	print(ver)
 	ver = verifiability(x)
 	print(ver)
 			

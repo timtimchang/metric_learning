@@ -22,7 +22,8 @@ from matplotlib import pyplot as plt
 
 from dataloader import Dataset, BalancedBatchSampler
 from network import EmbeddingNet
-from loss import OnlineTripletLoss
+#from loss import TripletLoss
+from triplet_loss import TripletLoss
 
 
 def parse_args():
@@ -134,7 +135,7 @@ def main():
 	# 超参数设置
 	epoch = args.epochs
 	num_classes = 10
-	batch_size = 32
+	batch_size = 128
 	learning_rate = 1e-4
 
 
@@ -153,8 +154,7 @@ def main():
 		# 转换至Tensor
 		transforms.ToTensor(),
 		#  归一化
-		   transforms.Normalize(mean=(0.5, 0.5, 0.5),   # 3 for RGB channels
-		                        std=(0.5, 0.5, 0.5))
+	   	transforms.Normalize(mean=(0.5, 0.5, 0.5),std=(0.5, 0.5, 0.5))
 		])
 
 
@@ -191,20 +191,20 @@ def main():
 	if cuda:
 		model = model.cuda()
 	print(model)
-	criterion = OnlineTripletLoss(margin=1.0)
+	#criterion = OnlineTripletLoss(margin=1.0)
+	criterion = TripletLoss(margin=1.0)
 	optimizer = Adam(model.parameters(), lr=learning_rate)
 	scheduler = StepLR(optimizer, 8, gamma=0.1, last_epoch=-1)
-
 	fit(train_loader, test_loader, model, criterion, optimizer, scheduler, epoch, cuda)
 
-	epoch += 10
+	epoch += 100
 	# for plot train embedding
-	#train_embeddings, train_targets = extract_embeddings(train_loader, model, cuda)
-	#plot_embeddings(train_loader.dataset, train_embeddings, train_targets, title='train'+str(epoch))
+	train_embeddings, train_targets = extract_embeddings(train_loader, model, cuda)
+	plot_embeddings(train_loader.dataset, train_embeddings, train_targets, title='train_'+str(epoch))
 
 	# for plot test emebedding
-	#test_embeddings, test_targets = extract_embeddings(test_loader, model, cuda)
-	#plot_embeddings(test_loader.dataset, test_embeddings, test_targets, title='test'+str(epoch))
+	test_embeddings, test_targets = extract_embeddings(test_loader, model, cuda)
+	plot_embeddings(test_loader.dataset, test_embeddings, test_targets, title='test_'+str(epoch))
 
 	torch.save(model.state_dict(), 'model/params_' + str(epoch) + '.pkl')
 

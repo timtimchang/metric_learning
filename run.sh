@@ -20,11 +20,9 @@
 
 #python src/main.py datasets/lfwcrop_color_by_dirs --min-images 20 
 
-for i in {0..9}
+for i in {0,100,200,300,400,500}
 do
-	i=$[$i*10]
-	#echo "$i"
-	python src/cifar.py datasets/cifar-10-batches-py  --epochs ${i}
+	python src/cifar.py datasets/cifar-10-batches-py  --epochs 100
 done
 
 
