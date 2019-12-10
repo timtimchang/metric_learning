@@ -24,8 +24,6 @@ def plot_distribution(plt, pos, neg):
             Z[j][i] = pos_prob / (pos_prob + neg_prob) 
             
     #Z = Z / Z.sum()
-
-
     plt.contourf(X, Y, Z, 100, alpha=.5, cmap=plt.get_cmap('jet'))
 
 if __name__ == "__main__":
