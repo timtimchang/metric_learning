@@ -23,13 +23,16 @@ def labeling(pos_points, neg_points):
     
     return points, labels
 
-def distance(pt, h):    
-    #print(pt)
-    #print(h)
-    a = abs( np.dot(pt, h[:2] ) )  
-    b = math.sqrt( np.linalg.norm(h[:2]) ) 
+def verified(pt, h_set):
+    num_h = len(h_set)
+    count = 0.0
     
-    return a/b
+    for h in h_set :
+        #print(h)
+        if np.dot(h[:2], pt) < h[2]:
+            count +=1
+
+    return count / num_h
 
 def select_hypothesis(h_set, pos_set, neg_set):
     h_set = [h  if h[0] > 0 else -h for h in h_set]
@@ -53,21 +56,6 @@ def select_hypothesis(h_set, pos_set, neg_set):
 
     return sel_h_set    
 
-def plot_distribution(plt, h_set):
-    x = np.arange(-1, 1.1, 0.1)
-    y = np.arange(-1, 1.1, 0.1)
-    X, Y = np.meshgrid(x, y)
-    Z = np.ones((len(x), len(y)))
-
-    #print(h_set)    
-    for i in range(len(x)):
-        for j in range(len(y)):
-            for h in h_set:
-                Z[j][i] += distance([x[i], y[j]],h)
-            
-    #Z = Z / Z.sum()
-    plt.contourf(X, Y, Z, 100, alpha=.5, cmap=plt.get_cmap('jet'))
-
 def plot_hyperplane(plt, coef_set, color = 'k'):
     for coef in coef_set:
         # for hyperplane ax+by+cz=d
@@ -76,7 +64,19 @@ def plot_hyperplane(plt, coef_set, color = 'k'):
         x = np.linspace(-1,1,2)
         y = (c - a*x ) / b
         plt.plot(x,y)
+    
+def plot_distribution(plt, h_set):
+    x = np.arange(-1, 1.1, 0.1)
+    y = np.arange(-1, 1.1, 0.1)
+    X, Y = np.meshgrid(x, y)
+    Z = np.zeros((len(x), len(y)))
 
+    for i in range(len(x)):
+        for j in range(len(y)):
+            Z[j][i] += verified([x[i],y[j]],h_set)
+            #print(Z[j][i])
+            
+    plt.contourf(X, Y, Z, 100, alpha=.5, cmap=plt.get_cmap('jet'))
 
 if __name__ == "__main__":
     # generate instance 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     clf = SVC(kernel='linear', C=1.0)
     clf.fit(points, labels.ravel() )
     coef = np.concatenate((clf.coef_[0], clf.intercept_)) 
-    sample_hypothesis = [ h - coef for h in np.random.randn(10,3)]
+    sample_hypothesis = [ h - coef for h in np.random.randn(100,3)]
     sel_hypothesis = select_hypothesis(sample_hypothesis, pos, neg) 
     #print(sel_hypothesis)
 
@@ -100,14 +100,10 @@ if __name__ == "__main__":
     plt.plot(pos[:,0], pos[:,1], "or")
     plt.plot(neg[:,0], neg[:,1], "ob")
     #plot_hyperplane(plt, [coef])
-    plot_hyperplane(plt, sel_hypothesis)
+    #plot_hyperplane(plt, sel_hypothesis)
     plot_distribution(plt, sel_hypothesis)
-
 
     import sys
     iter = sys.argv[1]
-    plt.savefig("../result/hypothesis_distribution_" + iter + ".png")
+    plt.savefig("../result/verified_distribution_" + iter + ".png")
     #plt.show()
-
-
-

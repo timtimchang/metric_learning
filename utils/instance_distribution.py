@@ -38,8 +38,10 @@ if __name__ == "__main__":
     plt.plot(pos[:,0], pos[:,1], "or")
     plt.plot(neg[:,0], neg[:,1], "ob")
     plot_distribution(plt, pos, neg)
-    plt.show()
 
-
+    import sys
+    iter = sys.argv[1]
+    plt.savefig("../result/instance_distribution_" + iter + ".png")
+    #plt.show()
 
 
