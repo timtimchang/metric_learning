@@ -105,5 +105,5 @@ if __name__ == "__main__":
 
     import sys
     iter = sys.argv[1]
-    plt.savefig("../result/verified_distribution_" + iter + ".png")
+    plt.savefig("../result/verifiability_distribution_" + iter + ".png")
     #plt.show()

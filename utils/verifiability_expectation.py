@@ -10,6 +10,16 @@ def classify(instance):
 
     return np.array(pos), np.array(neg)
 
+def verify(pt, h_set):
+    num_h = len(h_set)
+    count = 0.0
+    
+    for h in h_set :
+        #print(h)
+        if np.dot(h[:2], pt) > h[2]:
+            count +=1
+
+    return count / num_h
 
 def labeling(pos_points, neg_points):
     points = np.concatenate((pos_points, neg_points))
@@ -22,14 +32,6 @@ def labeling(pos_points, neg_points):
     labels = np.array(labels).reshape((-1,1))
     
     return points, labels
-
-def distance(pt, h):    
-    #print(pt)
-    #print(h)
-    a = abs( np.dot(pt, h[:2] ) )  
-    b = math.sqrt( np.linalg.norm(h[:2]) ) 
-    
-    return a/b
 
 def select_hypothesis(h_set, pos_set, neg_set):
     h_set = [h  if h[0] > 0 else -h for h in h_set]
@@ -53,19 +55,51 @@ def select_hypothesis(h_set, pos_set, neg_set):
 
     return sel_h_set    
 
-def plot_distribution(plt, h_set):
+def plot_expectation(plt, instance):
+    # for classify
+    pos, neg = classify(instance)
+
+    # for svm
+    points, labels = labeling(pos, neg)
+    clf = SVC(kernel='linear', C=1.0)
+    clf.fit(points, labels.ravel() )
+    coef = np.concatenate((clf.coef_[0], clf.intercept_)) 
+
+    #for sv
+    sv = clf.support_vectors_
+
+    # select hypothesis
+    sample_hypothesis = [ h - coef for h in np.random.randn(100,3)]
+    sel_hypothesis = select_hypothesis(sample_hypothesis, pos, neg) 
+
+
+    # for distribution
+    #pos_sv , neg_sv = classify(sv)
+    #print(pos)
+    #print(pos_sv)
+    pos_kde = stats.kde.gaussian_kde(pos.T)
+    neg_kde = stats.kde.gaussian_kde(neg.T)
+
+    
+    # for plotting
     x = np.arange(-1, 1.1, 0.1)
     y = np.arange(-1, 1.1, 0.1)
     X, Y = np.meshgrid(x, y)
     Z = np.ones((len(x), len(y)))
 
-    #print(h_set)    
     for i in range(len(x)):
         for j in range(len(y)):
-            for h in h_set:
-                Z[j][i] += distance([x[i], y[j]],h)
+            pos_prob = pos_kde(np.array([x[i], y[j] ]).T)
+            pos_ver_prob = pos_prob * ( 1 - verify([x[i], y[j]],sel_hypothesis) )
+
+            neg_prob = neg_kde(np.array([x[i], y[j] ]).T)
+            neg_ver_prob = neg_prob * verify([x[i], y[j]],sel_hypothesis) 
+
+            Z[j][i] = max(pos_ver_prob, neg_ver_prob)
             
     #Z = Z / Z.sum()
+    plt.plot(pos[:,0], pos[:,1], "or")
+    plt.plot(neg[:,0], neg[:,1], "ob")
     plt.contourf(X, Y, Z, 100, alpha=.5, cmap=plt.get_cmap('jet'))
 
 def plot_hyperplane(plt, coef_set, color = 'k'):
@@ -81,32 +115,18 @@ def plot_hyperplane(plt, coef_set, color = 'k'):
 if __name__ == "__main__":
     # generate instance 
     instance = np.random.rand(10,2) - [0.5, 0.5]
-    pos, neg = classify(instance)
-
-    # for svm
-    points, labels = labeling(pos, neg)
-    clf = SVC(kernel='linear', C=1.0)
-    clf.fit(points, labels.ravel() )
-    coef = np.concatenate((clf.coef_[0], clf.intercept_)) 
-    sample_hypothesis = [ h - coef for h in np.random.randn(10,3)]
-    sel_hypothesis = select_hypothesis(sample_hypothesis, pos, neg) 
-    #print(sel_hypothesis)
-
 
     # for plot
-    plt.xlim(-1,1)
-    plt.ylim(-1,1)
-
-    plt.plot(pos[:,0], pos[:,1], "or")
-    plt.plot(neg[:,0], neg[:,1], "ob")
+    #plt.xlim(-1,1)
+    #plt.ylim(-1,1)
     #plot_hyperplane(plt, [coef])
     #plot_hyperplane(plt, sel_hypothesis)
-    plot_distribution(plt, sel_hypothesis)
+    plot_expectation(plt, instance)
 
 
     import sys
     iter = sys.argv[1]
-    plt.savefig("../result/hypothesis_distribution_" + iter + ".png")
+    plt.savefig("../result/verifiability_expectation_" + iter + ".png")
     #plt.show()
 
 

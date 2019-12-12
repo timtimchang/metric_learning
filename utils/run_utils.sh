@@ -1,8 +1,8 @@
+#!bin/bash
 
-for file in ./*distribution.py
+for file in ./*expectation.py
 do
 	#file= ${file%.*}
-
 	for i in {0..9}
 	do
 		echo "$file $i"

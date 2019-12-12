@@ -21,5 +21,5 @@ sigma = math.sqrt(variance)
 x = np.linspace(mu - 3*sigma, mu + 3*sigma, 100)
 
 
-plt.plot(x,stats.norm.pdf(x, mu, sigma))
-plt.show()
+#plt.plot(x,stats.norm.pdf(x, mu, sigma))
+#plt.show()
