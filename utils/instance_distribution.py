@@ -21,9 +21,12 @@ def plot_distribution(plt, pos, neg):
         for j in range(len(y)):
             pos_prob = pos_kde(np.array([x[i], y[j] ]).T)
             neg_prob = neg_kde(np.array([x[i], y[j] ]).T)
-            Z[j][i] = pos_prob / (pos_prob + neg_prob) 
+            #Z[j][i] = pos_prob / (pos_prob + neg_prob) 
+            Z[j][i] = max(pos_prob + neg_prob) 
             
     #Z = Z / Z.sum()
+    plt.plot(pos[:,0], pos[:,1], "or")
+    plt.plot(neg[:,0], neg[:,1], "ob")
     plt.contourf(X, Y, Z, 100, alpha=.5, cmap=plt.get_cmap('jet'))
 
 if __name__ == "__main__":
@@ -35,8 +38,6 @@ if __name__ == "__main__":
     plt.xlim(-1,1)
     plt.ylim(-1,1)
     #plt.plot(instance[:,0], instance[:,1], "o")
-    plt.plot(pos[:,0], pos[:,1], "or")
-    plt.plot(neg[:,0], neg[:,1], "ob")
     plot_distribution(plt, pos, neg)
 
     import sys

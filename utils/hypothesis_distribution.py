@@ -69,6 +69,8 @@ def plot_distribution(plt, h_set):
     plt.contourf(X, Y, Z, 100, alpha=.5, cmap=plt.get_cmap('jet'))
 
 def plot_hyperplane(plt, coef_set, color = 'k'):
+    plt.xlim(-1,1)
+    plt.ylim(-1,1)
     for coef in coef_set:
         # for hyperplane ax+by+cz=d
         a,b,c = coef[0],coef[1],coef[2]
@@ -88,7 +90,7 @@ if __name__ == "__main__":
     clf = SVC(kernel='linear', C=1.0)
     clf.fit(points, labels.ravel() )
     coef = np.concatenate((clf.coef_[0], clf.intercept_)) 
-    sample_hypothesis = [ h - coef for h in np.random.randn(10,3)]
+    sample_hypothesis = [ h - coef for h in np.random.randn(20,3)]
     sel_hypothesis = select_hypothesis(sample_hypothesis, pos, neg) 
     #print(sel_hypothesis)
 
@@ -100,7 +102,7 @@ if __name__ == "__main__":
     plt.plot(pos[:,0], pos[:,1], "or")
     plt.plot(neg[:,0], neg[:,1], "ob")
     #plot_hyperplane(plt, [coef])
-    #plot_hyperplane(plt, sel_hypothesis)
+    plot_hyperplane(plt, sel_hypothesis)
     plot_distribution(plt, sel_hypothesis)
 
 

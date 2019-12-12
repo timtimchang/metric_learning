@@ -117,3 +117,32 @@ def labeling( pos_points, neg_points):
     
     return points, labels 
 
+
+def classify_2d(instance):
+    pos = [ x + [0.3, 0.3] for x in instance if np.dot([1,1],x) > 0 ]
+    neg = [ x - [0.3, 0.3]for x in instance if np.dot([1,1],x) < 0 ]
+
+    return np.array(pos), np.array(neg)
+
+
+def select_hypothesis(h_set, pos_set, neg_set):
+    h_set = [h  if h[0] > 0 else -h for h in h_set]
+    sel_h_set = []
+
+    for h in h_set:
+        choose = True
+        for pos in pos_set:    
+            if np.dot(h[:2],pos) < h[2] :
+                choose = False
+                break
+
+        if choose is False : continue
+
+        for neg in neg_set:
+            if  np.dot(h[:2],neg) > h[2] : 
+                choose = False
+                break
+        
+        if choose is True : sel_h_set.append(h)
+
+    return sel_h_set    
