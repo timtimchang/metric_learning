@@ -1,6 +1,6 @@
 #!bin/bash
 
-for file in ./*l_distribution.py
+for file in ./*_expectation.py
 do
 	#file= ${file%.*}
 	for i in {0..9}

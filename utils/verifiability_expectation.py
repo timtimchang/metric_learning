@@ -3,10 +3,17 @@ import matplotlib.pyplot as plt
 from scipy import stats
 from sklearn.svm import SVC
 import math
+from scipy.spatial import distance
+
+def init_classify(instance):
+    pos = [ x + [0.3, 0.3]  for x in instance if np.dot([1,1],x) > 0 ]
+    neg = [ x - [0.3, 0.3] for x in instance if np.dot([1,1],x) < 0 ]
+
+    return np.array(pos), np.array(neg)
 
 def classify(instance):
-    pos = [ x + [0.3, 0.3] for x in instance if np.dot([1,1],x) > 0 ]
-    neg = [ x - [0.3, 0.3]for x in instance if np.dot([1,1],x) < 0 ]
+    pos = [ x  for x in instance if np.dot([1,1],x) > 0 ]
+    neg = [ x  for x in instance if np.dot([1,1],x) < 0 ]
 
     return np.array(pos), np.array(neg)
 
@@ -57,12 +64,12 @@ def select_hypothesis(h_set, pos_set, neg_set):
 
 def plot_expectation(plt, instance):
     # for classify
-    pos, neg = classify(instance)
+    pos, neg = init_classify(instance)
 
     # for svm
     points, labels = labeling(pos, neg)
     clf = SVC(kernel='linear', C=1.0)
-    clf.fit(points, labels.ravel() )
+    clf.fit(points, labels.reshape(-1) )
     coef = np.concatenate((clf.coef_[0], clf.intercept_)) 
 
     #for sv
@@ -74,7 +81,7 @@ def plot_expectation(plt, instance):
 
 
     # for distribution
-    #pos_sv , neg_sv = classify(sv)
+    pos_sv , neg_sv = classify(sv)
     #print(pos)
     #print(pos_sv)
     pos_kde = stats.kde.gaussian_kde(pos.T)
@@ -90,16 +97,22 @@ def plot_expectation(plt, instance):
     for i in range(len(x)):
         for j in range(len(y)):
             pos_prob = pos_kde(np.array([x[i], y[j] ]).T)
+            #pos_dist = min( [ np.linalg.norm([x[i], y[j]] - sv) for sv in pos ] ) 
+            #pos_ver_prob = pos_prob * pos_dist
             pos_ver_prob = pos_prob * ( 1 - verify([x[i], y[j]],sel_hypothesis) )
 
             neg_prob = neg_kde(np.array([x[i], y[j] ]).T)
+            #neg_dist = min( [ np.linalg.norm([x[i], y[j]] - sv) for sv in neg ] ) 
+            #neg_ver_prob = neg_prob * neg_dist 
             neg_ver_prob = neg_prob * verify([x[i], y[j]],sel_hypothesis) 
 
-            Z[j][i] = max(pos_ver_prob, neg_ver_prob)
+            Z[j][i] = min(pos_ver_prob, neg_ver_prob)
             
     #Z = Z / Z.sum()
     plt.plot(pos[:,0], pos[:,1], "or")
     plt.plot(neg[:,0], neg[:,1], "ob")
+    plt.plot(pos_sv[:,0], pos_sv[:,1], "*r")
+    plt.plot(neg_sv[:,0], neg_sv[:,1], "*b")
     plt.contourf(X, Y, Z, 100, alpha=.5, cmap=plt.get_cmap('jet'))
 
 def plot_hyperplane(plt, coef_set, color = 'k'):

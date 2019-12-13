@@ -146,3 +146,5 @@ def select_hypothesis(h_set, pos_set, neg_set):
         if choose is True : sel_h_set.append(h)
 
     return sel_h_set    
+
+
